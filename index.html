@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<link rel="stylesheet" href="./styles.css" />
+	</head>
+	<body>
+		<div class="page-wrapper"></div>
+		<script>
+			// 1. Parsifechint duomenis iš Rick & Morty API, veikėjų masyvą atvaizduoti consolėj;
+			// 2. Veikėjus išrikiuoti pagal veikėjo vardą A-Z;
+			// 3. Veikėjų vardus atvaizduoti ekrane;
+			// 4. Kiekvienam veikėjui sukurti kortelę kurioje būtu: vardas, nuotrauka, species, origin;
+			// 5. Jeigu origin yra unknown toje vietoje turi atsirast "-";
+			// 6. Paspaudus ant kortelės consolėj turi atsirast veikėjo vardas ant kurio buvo paspausta;
+			// 7. Paspaudus ant kortelės į localstorage turi būt įdedamas veikėjo objektas;
+			// 8. Padaryt, kad butu atvaizduota tik pirmu 10 veikėjų;
+
+			function storeCharacter(ch) {
+				const character = JSON.stringify(ch);
+				localStorage.setItem("characters", character);
+			}
+
+			function rndNumArray(min, max, length) {
+				const numArray = [];
+				for (let i = 0; i < length; i++) {
+					const rndNum = Math.floor(Math.random() * (max - min + 1) + min);
+					if (max - min < length) {
+						numArray.push(rndNum);
+					} else if (numArray.find((num) => num === rndNum)) {
+						i--;
+					} else {
+						numArray.push(rndNum);
+					}
+				}
+				return numArray;
+			}
+
+			rickAndMortyFetch();
+			async function rickAndMortyFetch() {
+				const rndCharGen = rndNumArray(1, 826, 10).toString();
+				console.log(rndCharGen);
+				const result = await fetch("https://rickandmortyapi.com/api/character/" + rndCharGen);
+				const resJson = await result.json();
+				console.log(resJson);
+
+				const characters = resJson.sort((a, b) => {
+					return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+				});
+
+				const pageWrapper = document.getElementsByClassName("page-wrapper")[0];
+
+				characters.forEach((character, index) => {
+					const card = document.createElement("div");
+					card.setAttribute("class", "card");
+					card.addEventListener("click", () => {
+						storeCharacter(characters[index]);
+					});
+
+					const charName = document.createElement("h2");
+					charName.textContent = character.name;
+
+					const charImg = document.createElement("img");
+					charImg.src = character.image;
+					charImg.addEventListener("click", () => {
+						console.log(character.name);
+					});
+
+					const species = document.createElement("h3");
+					species.textContent = character.species;
+
+					const origin = document.createElement("h3");
+					const origName = character.origin.name;
+					origin.textContent = origName === "unknown" ? "-" : origName;
+
+					card.append(charName, charImg, species, origin);
+					pageWrapper.append(card);
+				});
+			}
+		</script>
+	</body>
+</html>
